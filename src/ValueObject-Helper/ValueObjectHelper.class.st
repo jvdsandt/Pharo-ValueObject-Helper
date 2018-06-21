@@ -51,6 +51,8 @@ ValueObjectHelper >> check [
 	self checkAccessors.
 	self checkInitialization.
 	self checkInstanceCreation.
+	
+	self installEqualHashMethods
 ]
 
 { #category : #'actions--private' }
@@ -94,6 +96,12 @@ ValueObjectHelper >> checkInstanceCreation [
 ]
 
 { #category : #testing }
+ValueObjectHelper >> hasInstanceVariables [
+
+	^valueClass allInstVarNames notEmpty
+]
+
+{ #category : #testing }
 ValueObjectHelper >> hasUndeclaredVariable: aMethod [
 
 	^ aMethod ast allChildren anySatisfy: [ :n | n isVariable and: [ n isUndeclared ] ]
@@ -118,12 +126,27 @@ ValueObjectHelper >> initSelector [
 ]
 
 { #category : #'actions--private' }
+ValueObjectHelper >> installEqualHashMethods [
+
+	| r |	
+		
+	self hasInstanceVariables
+		ifFalse: [ ^ self ].
+
+	r := RBGenerateEqualHashRefactoring 
+		className: valueClass name
+		variables: valueClass allInstVarNames.
+	
+	r execute
+]
+
+{ #category : #'actions--private' }
 ValueObjectHelper >> installInitMethod [
 
 	| source | 
 	
-	valueClass allInstVarNames isEmpty
-		ifTrue: [ ^ self ].
+	self hasInstanceVariables
+		ifFalse: [ ^ self ].
 	
 	source := String streamContents: [ :str |
 		| selectorStream argumentsStream |
@@ -153,8 +176,8 @@ ValueObjectHelper >> installNewMethod [
 
 	| source | 
 	
-	valueClass allInstVarNames isEmpty
-		ifTrue: [ ^ self ].
+	self hasInstanceVariables
+		ifFalse: [ ^ self ].
 	
 	source := String streamContents: [ :str |
 		| selectorStream argumentsStream extraCr |
