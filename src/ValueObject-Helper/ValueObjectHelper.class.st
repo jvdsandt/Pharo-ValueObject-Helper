@@ -122,6 +122,9 @@ ValueObjectHelper >> installInitMethod [
 
 	| source | 
 	
+	valueClass allInstVarNames isEmpty
+		ifTrue: [ ^ self ].
+	
 	source := String streamContents: [ :str |
 		| selectorStream argumentsStream |
 		selectorStream := self initSelector readStream.
@@ -149,6 +152,9 @@ ValueObjectHelper >> installInitMethod [
 ValueObjectHelper >> installNewMethod [
 
 	| source | 
+	
+	valueClass allInstVarNames isEmpty
+		ifTrue: [ ^ self ].
 	
 	source := String streamContents: [ :str |
 		| selectorStream argumentsStream extraCr |
